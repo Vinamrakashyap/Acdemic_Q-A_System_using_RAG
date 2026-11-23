@@ -1,33 +1,35 @@
-from cleaned_text_3 import preprocess_pdf
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from cleaned_text_3 import preprocess_pdf
 
 pdf_path = "data/demo_files/unit-3RER..pdf"
-parsed_doc = preprocess_pdf(pdf_path)
 
-#parsed_doc mein 2 cheejein hai:- 1) Page_Number 2)Content
-#Ek baat yaad rakhna: chunk_size=500 aur overlap_size=100 abhi hamari starting configuration hai.
-#Baad mein retrieval results dekhkar improve karenge.
-def chunk_text_by_chars(text:str, chunk_size:int = 500, overlap_size:int = 100) -> list:
-
+def chunk_documents(parsed_doc: list, chunk_size: int = 1000, overlap_size: int = 200) -> list[Document]:
     if chunk_size <= overlap_size:
-        raise ValueError("chunk size must be greater than overlap_size")
+        raise ValueError("chunk_size must be greater than overlap_size")
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size = chunk_size,
-        chunk_overlap = overlap_size,
-        separators=["\n\n","\n"," ",""]
+        chunk_size=chunk_size,
+        chunk_overlap=overlap_size,
+        separators=["\n## ", "\n\n", "\n", " ", ""]
     )
 
-    chunks = splitter.split_text(text)
-    return chunks
-all_chunks = []
+    all_docs = []
+    for page in parsed_doc:
+        text = page["content"]
+        if not text.strip():
+            continue
 
-for page in parsed_doc:
-    text = page["content"]
-    chunks = chunk_text_by_chars(text)
-    all_chunks.extend(chunks)
+        chunks = splitter.split_text(text)
+        for chunk in chunks:
+            all_docs.append(
+                Document(
+                    page_content=f"[Slide {page['page_number']}]\n{chunk}",
+                    metadata={"page_number": page["page_number"]}
+                )
+            )
+    return all_docs
 
-#testing
-#print(len(all_chunks))
-#print(all_chunks[3])
-
+def get_all_chunks() -> list[Document]:
+    parsed_doc = preprocess_pdf(pdf_path)
+    return chunk_documents(parsed_doc)

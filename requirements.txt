@@ -1,23 +1,20 @@
-
 # PDF Processing
 PyMuPDF==1.26.7
 
-# LangChain
+# LangChain (Compatible 0.3.x ecosystem)
 langchain==0.3.27
 langchain-core==0.3.80
 langchain-community==0.3.31
 langchain-text-splitters==0.3.11
-langchain-openai==1.7.3
-
-# Embeddings
-sentence-transformers==5.1.2
+langchain-openai>=0.3.0,<0.4.0
 
 # Vector Database
 faiss-cpu==1.12.0
 
-# LLM Providers
-google-genai
+# LLM Providers & Tokenizers
 openai
+tiktoken
+google-genai
 
 # Frontend
 streamlit
